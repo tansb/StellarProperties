@@ -1,0 +1,16 @@
+# docker commands:
+#   docker compose up -d
+#   docker exec -it stellar_pop_container bash
+services:
+  stellar_pop_synthesis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tansb/stellar_pop_synthesis
+    container_name: stellar_pop_container
+    volumes:
+        - ${MY_MOUNTED_DATA_DIR}:/mnt
+    stdin_open: true
+    tty: true
+    entrypoint: []
+    command: ["/bin/bash"]
