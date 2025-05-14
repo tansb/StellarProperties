@@ -18,6 +18,7 @@ RUN git clone --depth 1 --branch ${BRANCH} ${REPO_URL} .
 # Install the package dependencies from requirements.txt
 WORKDIR /app/source/StellarPopulation_Synthesis
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install ipython
 
 # Install the package and its dependencies
 #RUN pip install --no-cache-dir -e .
