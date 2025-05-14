@@ -1,0 +1,9 @@
+[
+  "test_sdss_spectrum.py::test_galaxy_object",
+  "test_sdss_spectrum.py::test_template_objects",
+  "test_sdss_spectrum.py::test_clean_spectrum",
+  "test_sdss_spectrum.py::test_lick_indices",
+  "test_sdss_spectrum.py::test_lick_models",
+  "test_sdss_spectrum.py::test_full_spectral_fitting",
+  "test_sdss_spectrum.py::test_save"
+]
