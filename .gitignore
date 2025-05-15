@@ -37,6 +37,7 @@ Thumbs.db
 
 # tans files
 Codebase_Improvement_Report.md
+old_test_sdss_spectrum.py
 
 # Add specific large files that exceed GitHub's limits
 # data/extremely_large_file.npy  # Uncomment if you have files over 100MB
