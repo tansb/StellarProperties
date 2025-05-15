@@ -1,13 +1,13 @@
 # docker commands:
 #   docker compose up -d
-#   docker exec -it stellar_pop_container bash
+#   docker exec -it stellar_properties bash
 services:
-  stellar_pop_synthesis:
+  stellar_properties_analysis:
     build:
       context: .
       dockerfile: Dockerfile
-    image: tansb/stellar_pop_synthesis
-    container_name: stellar_pop_container
+    image: tansb/stellar_properties
+    container_name: stellar_properties_container
     volumes:
         - ${MY_MOUNTED_DATA_DIR}:/mnt
     stdin_open: true
