@@ -4,7 +4,7 @@ import pickle
 import math
 import astropy.io.ascii as ap_ascii
 import ppxf.ppxf_util as pu
-import sp_helper_functions as sph
+from . import sp_helper_functions as sph
 from importlib import reload
 from astropy.io import fits
 from astropy.table import Table
@@ -135,6 +135,7 @@ class Galaxy():
         self.loglam_gal = loglam_gal / (self.z + 1)
         self.FWHM_inst  = FWHM_inst / (self.z + 1)
 
+        # set the velocity scale
         # Normalise the flux (Divide out the median). Must also divide out
         # the same value from the noise (i.e sqrt variance array)
         self.logflux_gal = logflux_gal / np.nanmedian(logflux_gal)
@@ -248,7 +249,7 @@ class Galaxy():
         # create a galaxy spectrum with these values found above replaced with
         # the bestfit spectrum (normalised to fit into the galaxy spectum
         # properly). note that 'temp' means 'temporary'
-        temp    = np.copy(logflux_gal)
+        temp = np.copy(logflux_gal)
         if len(m) > 0:
             temp[m] = (self.pp1.bestfit[m] * np.nanmedian(logflux_gal)
                        / np.nanmedian(self.pp1.bestfit))
@@ -435,24 +436,25 @@ class Galaxy():
         assert hasattr(self, 'lick_indices') is True, ("you havent measured "
                                                        "lick indices yet")
 
+        # define the path to this file so can find relative data dir
+        path_to_this_file = os.path.dirname(os.path.abspath(__file__))
+        data_dir = path_to_this_file + '/../../data/Lick_and_models/'
+
         if model == 's07' and model_file is None:
-            model_file = ('/Users/tania/Desktop/PhD_work/'
-                          + 'StellarPopulation_Synthesis/data/Lick_and_models/'
+            model_file = (data_dir
                           + 'alpha_models_ti_schiavon_reinterpolated_'
                           + 'log_age_nolick.fits')
-            params     = ['age', 'Z_H', 'alpha_Fe']
+            params = ['age', 'Z_H', 'alpha_Fe']
 
         if model == 'tmj' and model_file is None:
-            model_file = ('/Users/tania/Desktop/PhD_work/'
-                          + 'StellarPopulation_Synthesis/data/Lick_and_models/'
+            model_file = (data_dir
                           + 'TMB_TMK_interpolated_alpha_model.fits')
-            params     = ['age', 'Z_H', 'alpha_Fe']
+            params = ['age', 'Z_H', 'alpha_Fe']
 
         if model == 'miles' and model_file is None:
-            model_file = ('/Users/tania/Desktop/PhD_work/'
-                          + 'StellarPopulation_Synthesis/data/Lick_and_models/'
+            model_file = (data_dir
                           + 'Miles_Indicies_BaSTI_Chabrier_interpolated.fits')
-            params     = ['age', 'M_H']  # no alpha/Fe for these models
+            params = ['age', 'M_H']  # no alpha/Fe for these models
 
         # Read in the table of models
         with fits.open(model_file, memmap=False) as file:
@@ -500,7 +502,8 @@ class Galaxy():
         # =====================================================================
         # =====================================================================
 
-    def FSF(self, models, gas=False, tag='', regul=0, reg_ord=1, mdegree=10,
+    def full_spectral_fitting(
+            self, models, gas=False, tag='', regul=0, reg_ord=1, mdegree=10,
             degree=-1, clean_ppxf=False, rescale_noise=True,
             use_cleaned_spectrum=False, tie_balmer=True, limit_doublets=True,
             stellar_pops=True, **kwargs):
@@ -528,6 +531,12 @@ class Galaxy():
          loglam_temp, dv, velscale] = sph.set_up_ppxf(
             loglam_gal=loglam_gal, var=var, FWHM_inst=FWHM_inst, z=self.z,
             models=models, mask_emission=not gas)
+
+        # check to see whether clean_spectrum() has been run. If not, run it
+        if hasattr(self, 'pp0') is False:
+            print("You haven't run clean_spectrum yet. Doing it now.....")
+            self.clean_spectrum(models)
+            print("Finished clean_spectrum")
 
         if rescale_noise is True:
             ns_clean = ns_clean * math.sqrt(self.pp0.chi2)
@@ -603,7 +612,7 @@ class Galaxy():
         weights = weights.reshape(pp.reg_dim) / weights.sum()
 
         if stellar_pops:
-            sp      = sph.mean_age_metal(weights=weights, model=models.name)
+            sp      = sph.mean_age_metal(weights=weights, models=models)
             sp_dict = {'age': sp[0], '[Z/H]': sp[1]}
             setattr(self, 'sp' + tag, sp_dict)
             setattr(self, 'weights' + tag, weights)
@@ -630,5 +639,16 @@ class Galaxy():
         with open(output_dir + output_fn, 'wb') as file:
             pickle.dump(self, file)
 
+        # return the full output path + filename
+        return output_dir + output_fn
         # =====================================================================
         # =====================================================================
+
+    @classmethod
+    def load(cls, pckl_fname):
+        with open(pckl_fname, 'rb') as file:
+            obj = pickle.load(file)
+        if not isinstance(obj, cls):
+            raise TypeError(f"Loaded object is not a {cls.__name__} instance")
+        return obj
+

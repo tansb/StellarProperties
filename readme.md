@@ -9,7 +9,7 @@ The full spectral fitting aspect of the code is is built around Michele Cappella
 - Support for multiple survey data formats
 - Spectrum cleaning and preprocessing
 - Lick indices measurement
-- Stellar population measurements from Lick indices based on ([Schiavon 2007](https://ui.adsabs.harvard.edu/abs/2007ApJS..171..146S/abstract), or [Thomas, Maraston, Johansson 2011](https://ui.adsabs.harvard.edu/abs/2011MNRAS.412.2183T/abstract) models.
+- Stellar population measurements from Lick indices.
 - Stellar population and kinematics measurement from full spectral fitting using various (MILES stars, E-MILES, CaT, BPASS)
 - Full spectral fitting with both light-weighted or mass-weighted templates
 - Handy visualization tools
@@ -145,6 +145,11 @@ The package supports spectral data from:
 To avoid you spending ages gathering the various model files and getting them into the correct format, I've provided them with this repo using git's large file storage tool. Of course I haven't included all combinations of models available, so you'll likely want to include the models you want to use. At the moment, this will require you going into the Templates.py file and including an additional "if else" statement for the model keyword and including the path to the files. Pretty well all the templates included here are from the [MILES team](https://research.iac.es/proyecto/miles/), who provide access to their models on their website.
 
 Currently included models are:
+
+#### Lick Index models
+* S07: ([Schiavon 2007](https://ui.adsabs.harvard.edu/abs/2007ApJS..171..146S/abstract)
+* TMJ: [Thomas, Maraston, Johansson 2011](https://ui.adsabs.harvard.edu/abs/2011MNRAS.412.2183T/abstract)
+* MILES: BaSTI isochrones, Chabrier 2003 initial mass function
 
 #### Stellar Templates
 * CaT: Calcium Triplet library [CaT library v9.1](http://research.iac.es/proyecto/miles/pages/stellar-libraries/cat-library.php)

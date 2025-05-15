@@ -263,11 +263,6 @@ class Synthetic_Templates(Templates):
             # wavelength array of the templates
             self.linlam = np.array([h['CRVAL1'] + h['CDELT1'] * i
                                     for i in range(h['NAXIS1'])])
-
-            file = ap_ascii.read(glob.glob(lib_dir + '*.dat')[0])
-            self.dw     = file['col1'][1] - file['col1'][0]
-            self.linlam = file['col1']
-
         else:
             raise ValueError("The model name given isn't recognised")
 

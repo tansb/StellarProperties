@@ -1,9 +1,23 @@
 [
-  "test_sdss_spectrum.py::test_galaxy_object",
-  "test_sdss_spectrum.py::test_template_objects",
+  "test_galaxy.py::TestGalaxy::test_clean_spectrum",
+  "test_galaxy.py::TestGalaxy::test_clean_spectrum_stellar_tempaltes",
+  "test_galaxy.py::TestGalaxy::test_clean_spectrum_synthetic_tempaltes",
+  "test_galaxy.py::TestGalaxy::test_full_spectral_fitting",
+  "test_galaxy.py::TestGalaxy::test_initialization",
+  "test_galaxy.py::TestGalaxy::test_measure_lick_indices",
+  "test_galaxy.py::TestGalaxy::test_measure_sp_parameters",
+  "test_galaxy.py::TestGalaxy::test_save_and_load",
   "test_sdss_spectrum.py::test_clean_spectrum",
+  "test_sdss_spectrum.py::test_full_spectral_fitting",
+  "test_sdss_spectrum.py::test_galaxy_object",
   "test_sdss_spectrum.py::test_lick_indices",
   "test_sdss_spectrum.py::test_lick_models",
-  "test_sdss_spectrum.py::test_full_spectral_fitting",
-  "test_sdss_spectrum.py::test_save"
+  "test_sdss_spectrum.py::test_save",
+  "test_sdss_spectrum.py::test_template_objects",
+  "test_templates.py::TestTemplates::test_different_models",
+  "test_templates.py::TestTemplates::test_different_stellar_models",
+  "test_templates.py::TestTemplates::test_different_synthetic_models",
+  "test_templates.py::TestTemplates::test_stellar_templates_initialization",
+  "test_templates.py::TestTemplates::test_synthetic_templates_lw",
+  "test_templates.py::TestTemplates::test_synthetic_templates_mw"
 ]

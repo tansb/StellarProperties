@@ -1,1 +1,3 @@
-{}
+{
+  "test_templates.py::TestTemplates::test_different_models": true
+}

@@ -3,7 +3,7 @@ import ppxf.ppxf_util as ppxf_util
 import astropy.wcs as wcs
 import warnings
 import scipy.ndimage
-import sp_helper_functions as sph
+from . import sp_helper_functions as sph
 from astropy.table import Table
 from astropy.io import fits
 from astropy.utils.exceptions import AstropyWarning
@@ -310,7 +310,7 @@ def SDSS_get_from_file(input_fn):
             # redshift is stored instead in an extention called "SPALL"
             z = hdu["SPALL"].data["Z"][0]
 
-        loglam_gal = 10 ** hdu["COADD"].data["loglam"]
+        loglam_gal  = 10 ** hdu["COADD"].data["loglam"]
         logflux_gal = hdu["COADD"].data["flux"]
         # wdisp is the standard deviation (Wavelength dispersion i.e
         # sigma of fitted Gaussian) in units of number of pixel per pixel.
@@ -349,17 +349,16 @@ def SDSS_get_from_file(input_fn):
 
     # If the spectra are from BOSS, the (log) wavelength spacing isn't quite
     # exact, so rebin so that it is on a more precise wavelength scale.
-    if "SPALL" in hdu_names:
-        # _rbin = rebinned
-        logflux_gal_rbin, loglam_gal_rbin, velscale = ppxf_util.log_rebin(
-            lam=loglam_gal, spec=logflux_gal
-        )
+    # This has recently also become a problem for LEGACY spectra so do it for
+    # both
+    logflux_gal_rbin, loglam_gal_rbin, velscale = ppxf_util.log_rebin(
+        lam=loglam_gal, spec=logflux_gal)
 
-        var_rbin, aa, bb = ppxf_util.log_rebin(lam=loglam_gal, spec=var)
+    var_rbin, aa, bb = ppxf_util.log_rebin(lam=loglam_gal, spec=var)
 
-        loglam_gal = np.exp(loglam_gal_rbin)
-        logflux_gal = logflux_gal_rbin
-        var = var_rbin
+    loglam_gal = np.exp(loglam_gal_rbin)
+    logflux_gal = logflux_gal_rbin
+    var = var_rbin
 
     return (z, loglam_gal, logflux_gal, FWHM_inst, var)
 

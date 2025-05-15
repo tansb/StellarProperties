@@ -2,7 +2,7 @@ import numpy as np
 import astropy.io.ascii as ap_ascii
 import ppxf.ppxf_util as ppxf_util
 import os
-import get_from_file_functions as gff
+from . import get_from_file_functions as gff
 from scipy.constants import c
 
 c = c * 10**-3  # units of km/s
@@ -233,7 +233,7 @@ def determine_goodpixels(lam_gal, z):
     obs_lam = lam_gal * (z + 1)
     goodpix = ppxf_util.determine_goodpixels(ln_lam=np.log(obs_lam),
                                              lam_range_temp=[100, 20000],
-                                             z=z)
+                                             redshift=z)
 
     # Always replace the region around 5557 (nonredshift corrected) due to the
     # sky emission line
@@ -360,8 +360,7 @@ def mc_ind_errors(rest_wavelength, spectrum, variance, index,
 
     err_ind  = np.std(ind_vals)
 
-    return(err_ind)
-
+    return err_ind
 
 
 # ____________________________________________________________________________#
@@ -406,32 +405,24 @@ def vdisp_correct(veldisp, width, index):
                   + (25. - (sigma[int(np.ceil(veldisp) / 25 + 1)] - veldisp))
                   * high) / 25.)
 
-    return(width)
-
+    return width
 
 
 # ____________________________________________________________________________#
 # ___________ A slightly edited version of the method in miles_util __________#
-def mean_age_metal(weights, model='MILES', info=False,
-                   age_grid_path=None, met_grid_path=None):
+def mean_age_metal(weights, models, info=False):
 
     # Return mean Age and Metallicity given the relative weight for each
     # template
-
-    pwd = os.path.dirname(__file__)  # present directory of this file
-
-    if age_grid_path is None:
-        age_grid_path = pwd + (f'/../../data/{model}_FSF_files/'
-                               f'{model}_age_grid.npy')
-    if met_grid_path is None:
-        met_grid_path = pwd + (f'/../../data/{model}_FSF_files/'
-                               f'{model}_met_grid.npy')
-
-    log_age_grid = np.log10(np.load(age_grid_path))
-    met_grid     = np.load(met_grid_path)
+    # need two 2d arrays of shape (nages, nmets).
+    # models.ages and models.mets are both 1d arrays of length nages, nmets
+    # so need to populate the 2d arrays with these 1d arrays
+    met_grid     = np.array([models.mets for _ in range(len(models.ages))])
+    log_age_grid = np.array([np.log10(models.ages)
+                             for _ in range(len(models.mets))]).T
 
     # AGE in units of Gyrs, MET in [Z/H] = log10(Z/Z_0)
-    # Equations (1) and (2) from ol mate McDermid+15 :
+    # Equations (1) and (2) from McDermid+15 :
     #
     # (1)   log10[Age/years] = Σ w_i * log10[t_ssp,i] / Σ w_i
     #
@@ -442,10 +433,6 @@ def mean_age_metal(weights, model='MILES', info=False,
     #
     # http://adsabs.harvard.edu/abs/2015MNRAS.448.3484M
     w = weights
-
-    if model == 'BPASS':
-        w = weights[:, :, 0] + weights[:, :, 1]
-
     log_mean_age = np.sum(w * log_age_grid) / np.sum(weights)
     mean_met     = np.sum(w * met_grid)     / np.sum(weights)
     mean_age     = 10**log_mean_age
@@ -454,4 +441,4 @@ def mean_age_metal(weights, model='MILES', info=False,
         print('Weighted <Age> [Gyr]: %.3g' % mean_age)
         print('Weighted <[Z/H]>:     %.3g' % mean_met)
 
-    return(mean_age, mean_met)
+    return mean_age, mean_met
