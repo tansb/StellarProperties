@@ -36,6 +36,7 @@ env/
 Thumbs.db
 
 # tans files
+misc/
 Codebase_Improvement_Report.md
 old_test_sdss_spectrum.py
 

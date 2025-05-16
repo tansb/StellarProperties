@@ -58,9 +58,15 @@ from Tempaltes import Stellar_Templates
 t = Stellar_Templates(model='MILES')
 ```
 
-### Non docker
+### Pip
 
-If you don't want to use a docker container you can just follow the same steps the dockerfile does and install manually (although I suggest using a virtual environment or conda environment).
+Start by creating a new conda environment
+```bash
+conda create --name StellarProperties python=3.10.12
+conda activate StellarProperties
+```
+
+
 
 ```bash
 # Clone the repository
