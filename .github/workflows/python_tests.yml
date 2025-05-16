@@ -1,5 +1,6 @@
 name: Run Python unit tests
 
+# trigger unit tests on any push and pull requests to the main branch
 on:
   push:
     branches: [ main ]
@@ -7,7 +8,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  unit_tests:
     runs-on: ubuntu-22.04
 
     strategy:
@@ -17,6 +18,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        lfs: true
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -26,10 +29,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
+        # Install the package in development mode along with its dependencies
+        pip install -e ".[dev]"
 
     - name: Run tests
       run: |
-        pytest
+        pytest -v
 
