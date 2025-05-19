@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "StellarProperties"
+version = "1.0"
+description = """Python package for analyzing 1D galaxy spectra and performing
+                 stellar kinematics and populations measurements"""
+authors = [{name = "Tania M. Barone", email = 'tbarone@swin.edu.au'}]
+license = {text = "MIT"}  # Change if a different license applies
+readme = "readme.md"
+requires-python = ">=3.7"
+dependencies = ["ipython==8.18.1",
+                "numpy==1.26.4",
+                "matplotlib==3.9.4",
+                "astropy==6.0.1",
+                "scipy==1.13.1",
+                "ppxf==9.4.2",
+                "pytest==8.3.5"]
+
+[project.optional-dependencies]
+dev = ["jupyter",
+       "black>=21.5b2",
+       "flake8>=3.9.0"]
+
+[tool.setuptools]
+package-dir = {"" = "source"}
+packages = ["StellarProperties"]
+#include-package-data = true
+
+[project.urls]
+"Homepage" = "https://github.com/tansb/StellarProperties"
