@@ -1,0 +1,16 @@
+# docker commands:
+#   docker compose up -d
+#   docker exec -it stellar_properties bash
+services:
+  stellar_properties_analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tansb/stellar_properties
+    container_name: stellar_properties_container
+    volumes:
+        - ${MY_MOUNTED_DATA_DIR}:/mnt
+    stdin_open: true
+    tty: true
+    entrypoint: []
+    command: ["/bin/bash"]

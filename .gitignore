@@ -1,0 +1,90 @@
+# Start by ignoring macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Conda Environments
+*.conda
+*.ipynb_checkpoints
+*.env
+*.env.*
+
+# Conda environments and lock files
+conda-meta/
+*.yml.lock
+env.lock
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Docker
+*.log
+**/docker/volumes/
+**/docker/data/
+**/docker/logs/
+
+
+# pipenv and poetry
+Pipfile.lock
+poetry.lock
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings (optional)
+.vscode/
+
+# Pytest cache
+.pytest_cache/
+
+# mypy, coverage, and test logs
+.mypy_cache/
+.coverage
+.tox/
+.nox/
+htmlcov/
+*.log
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Linting and formatting
+.cache/
+*.ruff_cache/
+
+# Compiled extensions or Cython artifacts
+*.so
+*.c
+*.cpp
+
+# Git backup or merge files
+*.orig
+*.rej
+
+# Sensitive or temporary files (adjust as needed)
+*.env
+.env.*
+secrets.json
+*.bak
+*.swp
+
+# Personal logs or notebooks
+*.log
+*.out
+
+# Project specific files
+*.MAG

@@ -1,0 +1,8 @@
+# Core dependencies
+ipython==8.18.1
+numpy==1.26.4
+matplotlib==3.9.4
+astropy==6.0.1
+scipy==1.13.1
+ppxf==9.4.2    # Michele Cappellari's Penalized Pixel-Fitting
+pytest==8.3.5  # For running the unit tests
