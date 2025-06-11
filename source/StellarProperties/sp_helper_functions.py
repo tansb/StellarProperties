@@ -52,11 +52,17 @@ def get_from_file(input_fn, spec_type, **kwargs):
             (3) logflux_gal : logarithmically(10) binned flux array
             (4) wdisp       : the wavelength dispersion array.
     """
-    if spec_type == 'JWST':
-        return gff.JWST_get_from_file(input_fn, **kwargs)
+    if spec_type == 'JWST_2D':
+        return gff.JWST_2d_get_from_file(input_fn, **kwargs)
 
-    if spec_type == 'KCWI':
+    if spec_type == 'JWST_1D':
+        return gff.JWST_1d_get_from_file(input_fn, **kwargs)
+
+    elif spec_type == 'KCWI':
         return gff.KCWI_get_from_file(input_fn, **kwargs)
+
+    elif spec_type == 'MOSFIRE':
+        return gff.MOSFIRE_get_from_file(input_fn, **kwargs)
 
     elif spec_type == 'GTC_OSIRIS':
         return gff.GTC_OSIRIS_get_from_file(input_fn, **kwargs)
@@ -81,7 +87,8 @@ def get_from_file(input_fn, spec_type, **kwargs):
 
     else:
         raise Exception("What type of spectrum is this? Options are: 'SDSS', "
-                        "'LEGA-C', 'SAMI', and 'MAGPI', 'KCWI'")
+                        "'LEGA-C', 'SAMI', 'MAGPI', 'KCWI', 'MOSFIRE' and"
+                        " some others")
 
 
 def set_up_ppxf(loglam_gal, var, FWHM_inst, z, models, mask_emission):

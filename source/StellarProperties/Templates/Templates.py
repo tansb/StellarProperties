@@ -7,6 +7,7 @@ import ppxf.ppxf_util as pu
 from astropy.io import fits
 from astropy.io import ascii as ap_ascii
 from astropy import wcs
+from importlib.resources import files
 
 
 class Templates():
@@ -152,21 +153,21 @@ class Stellar_Templates(Templates):
         self.weighting = None
         self.model = model
 
-        # determine path to relevant input data files
-        pwd = os.path.dirname(__file__)
-        data_dir = pwd + '/../../../data/Stellar_Templates/'
+        # determine path to relevant input data files. This is defined in the
+        # pyproject.toml file
+        data_dir = files("StellarProperties") / "data" / "Stellar_Templates"
 
         # determine path to relevant input data files
         if lib_dir is None:
             if self.model == 'MILES':
                 # use the MILES stellar spectra
-                lib_dir = data_dir + 'MILES_library_v9.1_FITS/'
+                lib_dir = data_dir / 'MILES_library_v9.1_FITS'
                 self.FWHM = 2.54  # In units of Angstroms (Beifiori+ 2011)
                 # https://ui.adsabs.harvard.edu/abs/2011A%26A...531A.109B/)
 
             elif self.model == 'CaT':
                 # use the CaT specific stellar spectra (8350-9020 AA)
-                lib_dir = data_dir + 'CaT_library_v9.1_FITS/'
+                lib_dir = data_dir / 'CaT_library_v9.1_FITS'
                 self.FWHM = 1.5  # In units of Angstroms
                 # http://research.iac.es/proyecto/miles/pages/'
                 # 'stellar-libraries/cat-library.php
@@ -177,7 +178,7 @@ class Stellar_Templates(Templates):
                                  "provide  the path to the templates via "
                                  "lib_dir=<path_to_templates>")
 
-        all_file_names = glob.glob(lib_dir + 's*.fits')
+        all_file_names = list(lib_dir.glob('s*.fits'))
 
         # Import a single tempalte to get the sizing details
         with fits.open(all_file_names[0]) as hdu:
@@ -215,17 +216,16 @@ class Synthetic_Templates(Templates):
             self.weighting = 'mass_weighted'
 
         # determine path to relevant input data files
-        pwd = os.path.dirname(__file__)
-        data_dir = pwd + '/../../../data/Synthetic_Templates/'
+        data_dir = files("StellarProperties") / "data" / "Stellar_Templates"
 
         if model == 'MILES':
-            top_lib = data_dir + 'MILES_FSF_files/'
-            lib_dir       = top_lib + 'MILES_BASTI_CH_baseFe/'
-            array_path    = top_lib + 'MILES_all_data_3D.npy'
-            age_grid_path = top_lib + 'MILES_age_grid.npy'
-            met_grid_path = top_lib + 'MILES_met_grid.npy'
+            top_lib = data_dir / 'MILES_FSF_files'
+            lib_dir       = top_lib / 'MILES_BASTI_CH_baseFe'
+            array_path    = top_lib / 'MILES_all_data_3D.npy'
+            age_grid_path = top_lib / 'MILES_age_grid.npy'
+            met_grid_path = top_lib / 'MILES_met_grid.npy'
 
-            with fits.open(glob.glob(lib_dir + '*.fits')[0]) as file:
+            with fits.open(list(lib_dir.glob('*.fits')[0])) as file:
                 h = file[0].header
 
             self.dw     = h['CDELT1']  # wavelength spacing of each pixel
@@ -234,13 +234,13 @@ class Synthetic_Templates(Templates):
                                     for i in range(h['NAXIS1'])])
 
         elif model == 'EMILES':
-            top_lib = data_dir + 'EMILES_FSF_files/'
-            lib_dir       = top_lib + 'EMILES_PADOVA00_BASE_CH_FITS/'
-            array_path    = top_lib + 'EMILES_all_data_3D.npy'
-            age_grid_path = top_lib + 'EMILES_age_grid.npy'
-            met_grid_path = top_lib + 'EMILES_met_grid.npy'
+            top_lib = data_dir / 'EMILES_FSF_files/'
+            lib_dir       = top_lib / 'EMILES_PADOVA00_BASE_CH_FITS/'
+            array_path    = top_lib / 'EMILES_all_data_3D.npy'
+            age_grid_path = top_lib / 'EMILES_age_grid.npy'
+            met_grid_path = top_lib / 'EMILES_met_grid.npy'
 
-            with fits.open(glob.glob(lib_dir + '*.fits')[0]) as file:
+            with fits.open(list(lib_dir.glob('*.fits'))[0]) as file:
                 h = file[0].header
 
             self.dw     = h['CDELT1']  # wavelength spacing of each pixel
@@ -250,13 +250,13 @@ class Synthetic_Templates(Templates):
 
         elif model == 'EMILES-IR':
             # models with just the infra-red part
-            top_lib = data_dir + 'EMILES-IR_FSF_files/'
-            lib_dir       = top_lib + 'EMILES_BaSTI_bi_baseFe_infrared/'
-            array_path    = top_lib + 'EMILES_all_data_3D.npy'
-            age_grid_path = top_lib + 'EMILES-IR_age_grid.npy'
-            met_grid_path = top_lib + 'EMILES-IR_met_grid.npy'
+            top_lib = data_dir / 'EMILES-IR_FSF_files'
+            lib_dir       = top_lib / 'EMILES_BaSTI_bi_baseFe_infrared'
+            array_path    = top_lib / 'EMILES_all_data_3D.npy'
+            age_grid_path = top_lib / 'EMILES-IR_age_grid.npy'
+            met_grid_path = top_lib / 'EMILES-IR_met_grid.npy'
 
-            with fits.open(glob.glob(lib_dir + '*.fits')[0]) as file:
+            with fits.open(list(lib_dir.glob('*.fits'))[0]) as file:
                 h = file[0].header
 
             self.dw     = h['CDELT1']  # wavelength spacing of each pixel

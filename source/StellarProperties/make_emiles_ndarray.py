@@ -4,6 +4,8 @@ import os
 from astropy.io import fits
 import argparse
 import shutil
+from importlib.resources import files
+
 
 """ Extract the E-MILES spectra into a ndarray to make it faster to import """
 
@@ -76,13 +78,14 @@ def main():
     template_name = data_dir.split('/')[-2].replace('_FITS', '')
 
     # make the output directory if it doesn't already exist
-    output_dir = f'../../data/Synthetic_Templates/{template_name}/'
+    outdata_dir = files("StellarProperties") / "data" / "Synthetic_Templates"
+    output_dir = outdata_dir / template_name
     os.makedirs(os.path.dirname(output_dir), exist_ok=True)
     os.makedirs(os.path.dirname(output_dir), exist_ok=True)
 
     # copy the input fits dir into the new data dir
     shutil.copytree(data_dir,
-                    output_dir + template_name + '_FITS', dirs_exist_ok=True)
+                    output_dir / template_name + '_FITS', dirs_exist_ok=True)
 
     print("Saving to file: ")
     np.save(f"{output_dir}{template_name}_all_data_3D", templates)

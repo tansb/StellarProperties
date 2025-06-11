@@ -26,8 +26,12 @@ dev = ["jupyter",
 
 [tool.setuptools]
 package-dir = {"" = "source"}
-packages = ["StellarProperties"]
-#include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["source"]
+
+[tool.setuptools.package-data]
+"StellarProperties" = ["data/*"]
 
 [project.urls]
 "Homepage" = "https://github.com/tansb/StellarProperties"

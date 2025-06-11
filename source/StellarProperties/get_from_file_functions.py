@@ -35,7 +35,7 @@ MAGPI_get_from_file() : MAGPI spectra. Also need to input the lega-c
 # ____________________________________________________________________________#
 
 
-def JWST_get_from_file(input_fn, x_pix=31, y_pix=34, z_guess=1.1):
+def JWST_2d_get_from_file(input_fn, x_pix=31, y_pix=34, z_guess=1.1):
 
     with fits.open(input_fn) as hdul:
         linflux_gal = hdul['SCI'].data[:, x_pix, y_pix]
@@ -70,6 +70,62 @@ def JWST_get_from_file(input_fn, x_pix=31, y_pix=34, z_guess=1.1):
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
 # ____________________________________________________________________________#
+
+
+def JWST_1d_get_from_file(input_fn, z_guess=1.1):
+
+    # this function is to read in MOSFIRE data for a specific project. The data
+    # is held in ascii files.
+    tbl = Table.read(input_fn, names=[
+        'wave', 'flux', 'uncert', 'weight', 'inst_res'], format='ascii')
+    linflux_gal = tbl['flux']
+    linvar_gal  = tbl['uncert']**2
+    linlam_gal  = tbl['wave']
+
+    # logarithmically bin the data
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
+        lam=linlam_gal, spec=linflux_gal)
+    # logaritmically bin the variance
+    logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar_gal)
+    loglam_gal = np.exp(loglam_gal)
+
+    R = 1000
+    FWHM_inst = loglam_gal / R
+
+    return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+# ____________________________________________________________________________#
+
+
+def MOSFIRE_get_from_file(input_fn, band, z_guess=0):
+
+    # inst res based on:
+    # https://www2.keck.hawaii.edu/inst/mosfire/grating.html
+    if band == 'Y':
+        R = 3388
+    elif band == 'J':
+        R = 3318
+
+    # this function is to read in MOSFIRE data for a specific project. The data
+    # is held in ascii files.
+    tbl = Table.read(input_fn, names=[
+        'wave', 'flux', 'uncert', 'weight', 'inst_res'], format='ascii')
+    linflux_gal = tbl['flux']
+    linvar_gal  = tbl['uncert']**2
+    linlam_gal  = tbl['wave']
+
+    # logarithmically bin the data
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
+        lam=linlam_gal, spec=linflux_gal)
+    # logaritmically bin the variance
+    logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar_gal)
+
+    loglam_gal = np.exp(loglam_gal)
+    FWHM_inst  = loglam_gal / R
+
+    #### TBD
+    return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+# ____________________________________________________________________________#
+
 
 
 def GTC_OSIRIS_get_from_file(input_fn, z_guess=0.72233760, grating="R2500R"):
@@ -152,7 +208,8 @@ def KCWI_get_from_file(
     with fits.open(input_fn) as hdu:
         data = hdu[0].data
         linlam_gal = [
-            h["CRVAL3"] + h["CDELT3"] * np.arange(h["NAXIS3"]) for h in [hdu[0].header]
+            h["CRVAL3"] + h["CDELT3"] * np.arange(h["NAXIS3"])
+            for h in [hdu[0].header]
         ][0]
 
     # for now just take everything above the lyman alpha line
@@ -224,7 +281,8 @@ def XSHOOTER_get_from_file(input_fn, z_guess=0.49):
         lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal
     )
     logvar, aa, bb = ppxf_util.log_rebin(
-        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar, velscale=velscale
+        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar,
+        velscale=velscale
     )
 
     loglam_gal = np.exp(loglam_gal)
@@ -267,7 +325,8 @@ def SAMI_get_from_file(input_fn, table_name, extension="RE_MGE"):
         lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal
     )
     logvar, aa, bb = ppxf_util.log_rebin(
-        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar, velscale=velscale
+        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar,
+        velscale=velscale
     )
 
     loglam_gal = np.exp(loglam_gal)
