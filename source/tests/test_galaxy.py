@@ -17,7 +17,7 @@ class TestGalaxy:
     @pytest.fixture
     def synthetic_templates(self):
         """Create a template fixture for tests."""
-        return Synthetic_Templates(model='EMILES')
+        return Synthetic_Templates(model='EMILES_BASTI_BASE_KU')
 
     @pytest.fixture
     def sample_galaxy(self):
@@ -33,7 +33,7 @@ class TestGalaxy:
         assert hasattr(sample_galaxy, 'loglam_gal')
         assert hasattr(sample_galaxy, 'logflux_gal')
 
-    def test_clean_spectrum_stellar_tempaltes(
+    def test_clean_spectrum_stellar_templates(
             self, sample_galaxy, stellar_templates):
         """Test spectrum cleaning functionality."""
         # Save the original flux
@@ -54,7 +54,7 @@ class TestGalaxy:
         assert not np.isnan(sample_galaxy.galaxy_final).any()
         assert not np.isinf(sample_galaxy.galaxy_final).any()
 
-    def test_clean_spectrum_synthetic_tempaltes(
+    def test_clean_spectrum_synthetic_templates(
             self, sample_galaxy, synthetic_templates):
         """Test spectrum cleaning functionality."""
         # Perform cleaning

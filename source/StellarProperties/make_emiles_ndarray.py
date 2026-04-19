@@ -85,13 +85,13 @@ def main():
 
     # copy the input fits dir into the new data dir
     shutil.copytree(data_dir,
-                    output_dir / template_name + '_FITS', dirs_exist_ok=True)
+                    output_dir / f'{template_name}_FITS', dirs_exist_ok=True)
 
     print("Saving to file: ")
-    np.save(f"{output_dir}{template_name}_all_data_3D", templates)
-    np.save(f"{output_dir}{template_name}_age_grid", age_grid)
-    np.save(f"{output_dir}{template_name}_met_grid", met_grid)
-    np.save(f"{output_dir}{template_name}_wave_array", wave)
+    np.save(output_dir / f"{template_name}_all_data_3D", templates)
+    np.save(output_dir / f"{template_name}_age_grid", age_grid)
+    np.save(output_dir / f"{template_name}_met_grid", met_grid)
+    np.save(output_dir / f"{template_name}_wave_array", wave)
 
 
 if __name__ == "__main__":

@@ -33,5 +33,8 @@ where = ["source"]
 [tool.setuptools.package-data]
 "StellarProperties" = ["data/*"]
 
+[project.scripts]
+make-emiles-ndarray = "StellarProperties.make_emiles_ndarray:main"
+
 [project.urls]
 "Homepage" = "https://github.com/tansb/StellarProperties"

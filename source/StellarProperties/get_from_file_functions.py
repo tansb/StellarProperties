@@ -7,7 +7,7 @@ from . import sp_helper_functions as sph
 from astropy.table import Table
 from astropy.io import fits
 from astropy.utils.exceptions import AstropyWarning
-
+from astropy.constants import c
 
 """
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,30 +32,70 @@ MAGPI_get_from_file() : MAGPI spectra. Also need to input the lega-c
                          the fits header
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
+
+
+def get_from_file_generic_txt(input_fn, z_guess=0.0, R=None, vacuum=False):
+    # this function is to read in any spectral data which has been prepared in
+    # the format needed for ALF:
+    # wave in angstroms, normalised flux, normalised noise, weight, inst_res in
+    # units of sigma km/s.
+    # The data is held in ascii files.
+    tbl = Table.read(
+        input_fn, names=["wave", "flux", "uncert", "weight", "inst_res"], format="ascii"
+    )
+    linflux_gal = tbl["flux"]
+    linvar_gal = tbl["uncert"] ** 2
+    linlam_gal = tbl["wave"]
+
+    # logarithmically bin the data
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(lam=linlam_gal, spec=linflux_gal)
+
+    # logaritmically bin the variance
+    logvar = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar_gal)[0]
+    loglam_gal = np.exp(loglam_gal)
+
+    # if the spectrum is in VACUUM wavelengths, need to convert this to air
+    if vacuum is True:
+        loglam_gal = sph.vacuum_to_air(loglam_gal)
+
+    if R is None:
+        # first need to logarithmically rebin the tbl['inst_res']
+        sigma_inst_kms = tbl["inst_res"]
+        logsigma_inst_kms = ppxf_util.log_rebin(lam=linlam_gal, spec=sigma_inst_kms)[0]
+
+        R = c.to("km/s").value / (logsigma_inst_kms * 2 * np.sqrt(2 * np.log(2)))
+
+        FWHM_inst = loglam_gal / R
+    else:
+        FWHM_inst = loglam_gal / R
+
+    return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
 def JWST_2d_get_from_file(input_fn, x_pix=31, y_pix=34, z_guess=1.1):
 
     with fits.open(input_fn) as hdul:
-        linflux_gal = hdul['SCI'].data[:, x_pix, y_pix]
-        linvar_gal = (hdul['ERR'].data[:, x_pix, y_pix])**2
+        linflux_gal = hdul["SCI"].data[:, x_pix, y_pix]
+        linvar_gal = (hdul["ERR"].data[:, x_pix, y_pix]) ** 2
 
-        h = hdul['SCI'].header
+        h = hdul["SCI"].header
         # convert the wavelength from micron to angstroms,
         # and convert to rest frame
-        linlam_gal = (h['CRVAL3'] + h['CDELT3'] * np.arange(h['NAXIS3']))
-        linlam_gal = (linlam_gal * 1e4)
+        linlam_gal = h["CRVAL3"] + h["CDELT3"] * np.arange(h["NAXIS3"])
+        linlam_gal = linlam_gal * 1e4
 
     # The flux and wavelength come linearly binned in units of Angstroms.
     # Need to logarithmically rebin.
     # Note however that log_rebin returns the wavelength array in units of
     # ln[AA], so need to to np.exp(loglam_gal) to get in units of AA
     logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
-        lam=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal)
+        lam=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal
+    )
 
-    logvar, aa, bb = ppxf_util.log_rebin(
-        lam=[linlam_gal.min(), linlam_gal.max()], spec=linvar_gal)
+    logvar, aa, bb = ppxf_util.log_rebin(lam=[linlam_gal.min(), linlam_gal.max()], spec=linvar_gal)
 
     loglam_gal = np.exp(loglam_gal)
 
@@ -69,6 +109,8 @@ def JWST_2d_get_from_file(input_fn, x_pix=31, y_pix=34, z_guess=1.1):
     FWHM_inst = loglam_gal / R
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
@@ -76,15 +118,15 @@ def JWST_1d_get_from_file(input_fn, z_guess=1.1):
 
     # this function is to read in MOSFIRE data for a specific project. The data
     # is held in ascii files.
-    tbl = Table.read(input_fn, names=[
-        'wave', 'flux', 'uncert', 'weight', 'inst_res'], format='ascii')
-    linflux_gal = tbl['flux']
-    linvar_gal  = tbl['uncert']**2
-    linlam_gal  = tbl['wave']
+    tbl = Table.read(
+        input_fn, names=["wave", "flux", "uncert", "weight", "inst_res"], format="ascii"
+    )
+    linflux_gal = tbl["flux"]
+    linvar_gal = tbl["uncert"] ** 2
+    linlam_gal = tbl["wave"]
 
     # logarithmically bin the data
-    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
-        lam=linlam_gal, spec=linflux_gal)
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(lam=linlam_gal, spec=linflux_gal)
     # logaritmically bin the variance
     logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar_gal)
     loglam_gal = np.exp(loglam_gal)
@@ -93,6 +135,8 @@ def JWST_1d_get_from_file(input_fn, z_guess=1.1):
     FWHM_inst = loglam_gal / R
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
@@ -100,32 +144,33 @@ def MOSFIRE_get_from_file(input_fn, band, z_guess=0):
 
     # inst res based on:
     # https://www2.keck.hawaii.edu/inst/mosfire/grating.html
-    if band == 'Y':
+    if band == "Y":
         R = 3388
-    elif band == 'J':
+    elif band == "J":
         R = 3318
 
     # this function is to read in MOSFIRE data for a specific project. The data
     # is held in ascii files.
-    tbl = Table.read(input_fn, names=[
-        'wave', 'flux', 'uncert', 'weight', 'inst_res'], format='ascii')
-    linflux_gal = tbl['flux']
-    linvar_gal  = tbl['uncert']**2
-    linlam_gal  = tbl['wave']
+    tbl = Table.read(
+        input_fn, names=["wave", "flux", "uncert", "weight", "inst_res"], format="ascii"
+    )
+    linflux_gal = tbl["flux"]
+    linvar_gal = tbl["uncert"] ** 2
+    linlam_gal = tbl["wave"]
 
     # logarithmically bin the data
-    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
-        lam=linlam_gal, spec=linflux_gal)
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(lam=linlam_gal, spec=linflux_gal)
     # logaritmically bin the variance
     logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar_gal)
 
     loglam_gal = np.exp(loglam_gal)
-    FWHM_inst  = loglam_gal / R
+    FWHM_inst = loglam_gal / R
 
     #### TBD
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
-# ____________________________________________________________________________#
 
+
+# ____________________________________________________________________________#
 
 
 def GTC_OSIRIS_get_from_file(input_fn, z_guess=0.72233760, grating="R2500R"):
@@ -140,12 +185,9 @@ def GTC_OSIRIS_get_from_file(input_fn, z_guess=0.72233760, grating="R2500R"):
     linvar = 1 / lin_ivar
 
     # The data is really messily binned, plus needs to be in log scale.
-    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
-        lam=linlam_gal, spec=linflux_gal
-    )
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(lam=linlam_gal, spec=linflux_gal)
 
-    logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar,
-                                         velscale=velscale)
+    logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar, velscale=velscale)
 
     # instrumental resolution taken from
     # http://www.gtc.iac.es/instruments/osiris/
@@ -162,6 +204,8 @@ def GTC_OSIRIS_get_from_file(input_fn, z_guess=0.72233760, grating="R2500R"):
     loglam_gal = sph.vacuum_to_air(loglam_gal)
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
@@ -178,9 +222,7 @@ def GTC_OSIRIS_get_from_file_spec2d(
     linvar = 1 / lin_ivar
 
     # The data is really messily binned, plus needs to be in log scale.
-    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(
-        lam=linlam_gal, spec=linflux_gal
-    )
+    logflux_gal, loglam_gal, velscale = ppxf_util.log_rebin(lam=linlam_gal, spec=linflux_gal)
 
     logvar, aa, bb = ppxf_util.log_rebin(lam=linlam_gal, spec=linvar)
 
@@ -199,18 +241,17 @@ def GTC_OSIRIS_get_from_file_spec2d(
     loglam_gal = sph.vacuum_to_air(loglam_gal)
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
-def KCWI_get_from_file(
-    input_fn, x_pix=31, y_pix=34, r=1, z_guess=0.72233760, wave_min_obs=None
-):
+def KCWI_get_from_file(input_fn, x_pix=31, y_pix=34, r=1, z_guess=0.72233760, wave_min_obs=None):
     with fits.open(input_fn) as hdu:
         data = hdu[0].data
-        linlam_gal = [
-            h["CRVAL3"] + h["CDELT3"] * np.arange(h["NAXIS3"])
-            for h in [hdu[0].header]
-        ][0]
+        linlam_gal = [h["CRVAL3"] + h["CDELT3"] * np.arange(h["NAXIS3"]) for h in [hdu[0].header]][
+            0
+        ]
 
     # for now just take everything above the lyman alpha line
     if wave_min_obs == None:
@@ -230,9 +271,7 @@ def KCWI_get_from_file(
     x = np.arange(0, data.shape[1])
     y = np.arange(0, data.shape[2])
 
-    mask = (y[np.newaxis, :] - source_xy[0]) ** 2 + (
-        x[:, np.newaxis] - source_xy[1]
-    ) ** 2 < r**2
+    mask = (y[np.newaxis, :] - source_xy[0]) ** 2 + (x[:, np.newaxis] - source_xy[1]) ** 2 < r**2
 
     linflux_gal = np.sum(data[:, mask], axis=1)[range_of_interest]
     linvar_gal = np.sum(var[:, mask], axis=1)[range_of_interest]
@@ -263,6 +302,8 @@ def KCWI_get_from_file(
     FWHM_inst = loglam_gal / R
 
     return (z_guess, loglam_gal, logflux_gal, FWHM_inst, logvar)
+
+
 # ____________________________________________________________________________#
 
 
@@ -281,8 +322,7 @@ def XSHOOTER_get_from_file(input_fn, z_guess=0.49):
         lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal
     )
     logvar, aa, bb = ppxf_util.log_rebin(
-        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar,
-        velscale=velscale
+        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar, velscale=velscale
     )
 
     loglam_gal = np.exp(loglam_gal)
@@ -325,8 +365,7 @@ def SAMI_get_from_file(input_fn, table_name, extension="RE_MGE"):
         lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linflux_gal
     )
     logvar, aa, bb = ppxf_util.log_rebin(
-        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar,
-        velscale=velscale
+        lam_range=[linlam_gal.min(), linlam_gal.max()], spec=linvar, velscale=velscale
     )
 
     loglam_gal = np.exp(loglam_gal)
@@ -369,7 +408,7 @@ def SDSS_get_from_file(input_fn):
             # redshift is stored instead in an extention called "SPALL"
             z = hdu["SPALL"].data["Z"][0]
 
-        loglam_gal  = 10 ** hdu["COADD"].data["loglam"]
+        loglam_gal = 10 ** hdu["COADD"].data["loglam"]
         logflux_gal = hdu["COADD"].data["flux"]
         # wdisp is the standard deviation (Wavelength dispersion i.e
         # sigma of fitted Gaussian) in units of number of pixel per pixel.
@@ -411,7 +450,8 @@ def SDSS_get_from_file(input_fn):
     # This has recently also become a problem for LEGACY spectra so do it for
     # both
     logflux_gal_rbin, loglam_gal_rbin, velscale = ppxf_util.log_rebin(
-        lam=loglam_gal, spec=logflux_gal)
+        lam=loglam_gal, spec=logflux_gal
+    )
 
     var_rbin, aa, bb = ppxf_util.log_rebin(lam=loglam_gal, spec=var)
 
@@ -437,9 +477,7 @@ def LEGAC_get_from_file(input_fn, table_name):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", AstropyWarning)  # silence warning
             _wcs_ = wcs.WCS(f[0].header)
-            linlam_gal = np.squeeze(
-                _wcs_.all_pix2world(np.arange(_wcs_._naxis[0]), 0, 0)[0]
-            )
+            linlam_gal = np.squeeze(_wcs_.all_pix2world(np.arange(_wcs_._naxis[0]), 0, 0)[0])
             # delete the _wcs_ object
             del _wcs_
 
@@ -500,9 +538,7 @@ def MAGPI_get_from_file(input_fn, table_name):
         h = f[1].header
 
         linflux_gal = f[1].data
-        linlam_gal = np.array(
-            [h["CRVAL1"] + i * h["CDELT1"] for i in range(h["NAXIS1"])]
-        )
+        linlam_gal = np.array([h["CRVAL1"] + i * h["CDELT1"] for i in range(h["NAXIS1"])])
         linvar = f[2].data
 
         # The flux and wavelength come linearly binned in units of Angstroms.
@@ -531,9 +567,7 @@ def _get_valid_slit_spectral_pixels(slit):
     # LEGA-C spectra may often have zeros at the beginning/end. This is to
     # remove them (written by Francesco) :
     _oned_spec = slit
-    _oned_spec_mask = (
-        np.isclose(_oned_spec, 0) | (_oned_spec < 0) | (~np.isfinite(_oned_spec))
-    )
+    _oned_spec_mask = np.isclose(_oned_spec, 0) | (_oned_spec < 0) | (~np.isfinite(_oned_spec))
 
     labels, n_interv = scipy.ndimage.label(_oned_spec_mask)
 

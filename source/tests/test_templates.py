@@ -26,7 +26,7 @@ class TestTemplates:
     def test_different_synthetic_models(self):
         """Test initialization with different models."""
         # Test a few different models
-        models = ['MILES', 'EMILES', 'EMILES-IR']
+        models = ['EMILES_BASTI_BASE_KU', 'EMILES_PADOVA00_BASE_CH']
 
         for model in models:
             templates = Synthetic_Templates(model=model)

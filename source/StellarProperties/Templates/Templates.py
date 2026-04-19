@@ -205,7 +205,7 @@ class Stellar_Templates(Templates):
 
 class Synthetic_Templates(Templates):
 
-    def __init__(self, model='MILES', light_weighted=False):
+    def __init__(self, model='EMILES_BASTI_BASE_KU', light_weighted=False):
         """ Import from file the 3D array containing the templates. """
 
         super().__init__()  # inherit from superclass "Templates"
@@ -216,55 +216,25 @@ class Synthetic_Templates(Templates):
             self.weighting = 'mass_weighted'
 
         # determine path to relevant input data files
-        data_dir = files("StellarProperties") / "data" / "Stellar_Templates"
+        data_dir = files("StellarProperties") / "data" / "Synthetic_Templates"
 
-        if model == 'MILES':
-            top_lib = data_dir / 'MILES_FSF_files'
-            lib_dir       = top_lib / 'MILES_BASTI_CH_baseFe'
-            array_path    = top_lib / 'MILES_all_data_3D.npy'
-            age_grid_path = top_lib / 'MILES_age_grid.npy'
-            met_grid_path = top_lib / 'MILES_met_grid.npy'
+        top_lib = data_dir / model
+        lib_dir       = top_lib / f'{model}_FITS'
+        array_path    = top_lib / f'{model}_all_data_3D.npy'
+        age_grid_path = top_lib / f'{model}_age_grid.npy'
+        met_grid_path = top_lib / f'{model}_met_grid.npy'
 
-            with fits.open(list(lib_dir.glob('*.fits')[0])) as file:
-                h = file[0].header
+        all_files = list(lib_dir.glob('*.fits'))
+        with fits.open(all_files[0]) as file:
+            h = file[0].header
 
-            self.dw     = h['CDELT1']  # wavelength spacing of each pixel
-            # wavelength array of the templates
-            self.linlam = np.array([h['CRVAL1'] + h['CDELT1'] * i
-                                    for i in range(h['NAXIS1'])])
+        self.dw     = h['CDELT1']  # wavelength spacing of each pixel
+        # wavelength array of the templates
+        self.linlam = np.array([h['CRVAL1'] + h['CDELT1'] * i
+                                for i in range(h['NAXIS1'])])
 
-        elif model == 'EMILES':
-            top_lib = data_dir / 'EMILES_FSF_files/'
-            lib_dir       = top_lib / 'EMILES_PADOVA00_BASE_CH_FITS/'
-            array_path    = top_lib / 'EMILES_all_data_3D.npy'
-            age_grid_path = top_lib / 'EMILES_age_grid.npy'
-            met_grid_path = top_lib / 'EMILES_met_grid.npy'
-
-            with fits.open(list(lib_dir.glob('*.fits'))[0]) as file:
-                h = file[0].header
-
-            self.dw     = h['CDELT1']  # wavelength spacing of each pixel
-            # wavelength array of the templates
-            self.linlam = np.array([h['CRVAL1'] + h['CDELT1'] * i
-                                    for i in range(h['NAXIS1'])])
-
-        elif model == 'EMILES-IR':
-            # models with just the infra-red part
-            top_lib = data_dir / 'EMILES-IR_FSF_files'
-            lib_dir       = top_lib / 'EMILES_BaSTI_bi_baseFe_infrared'
-            array_path    = top_lib / 'EMILES_all_data_3D.npy'
-            age_grid_path = top_lib / 'EMILES-IR_age_grid.npy'
-            met_grid_path = top_lib / 'EMILES-IR_met_grid.npy'
-
-            with fits.open(list(lib_dir.glob('*.fits'))[0]) as file:
-                h = file[0].header
-
-            self.dw     = h['CDELT1']  # wavelength spacing of each pixel
-            # wavelength array of the templates
-            self.linlam = np.array([h['CRVAL1'] + h['CDELT1'] * i
-                                    for i in range(h['NAXIS1'])])
-        else:
-            raise ValueError("The model name given isn't recognised")
+        #else:
+        #    raise ValueError("The model name given isn't recognised")
 
         self.name      = model
         self.templates = np.load(array_path)      # array of the templates

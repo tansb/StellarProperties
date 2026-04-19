@@ -14,18 +14,6 @@ The full spectral fitting aspect of the code is is built around Michele Cappella
 - Full spectral fitting with both light-weighted or mass-weighted templates
 - Handy visualization tools
 
-
-## Requirements
-
-- Python 3.6+
-- NumPy
-- Matplotlib
-- Astropy
-- Scipy
-- pPXF
-
-If using the provided docker files, all requirements will be automatically installed. Otherwise, see the requirements.txt file for the specific versions.
-
 ## Installation Steps
 
 ### Pip
@@ -52,7 +40,7 @@ pip install .
 ```
 
 ### Docker
-If you're familiar with docker, the easiest way to use this code is to just build the docker image and container described in the dockerfiles. The steps are as follows:
+I made a docker container as a practice for myself using docker. To build the docker image and container described in the dockerfiles, the steps are as follows:
 
 1. Download the dockerfile and the docker-compose.yml files
 
@@ -82,6 +70,15 @@ t = Stellar_Templates(model='MILES')
 ```
 
 ## Usage
+
+First you need to download Synthetic E-MILES templates from the [MILES project website](https://research.iac.es/proyecto/miles/pages/spectral-energy-distributions-seds/e-miles.php). They have an [online repository](https://cloud.iac.es/index.php/s/aYECNyEQfqgYwt4) with all the models.
+
+then do:
+```
+make-emiles-ndarray <path_to_template_directory>
+```
+This will automatically read the template library, make .npy files containing the age and grids as well as a all_data_3D.npy file which contains all the template info, and puts them all into the expected directory in the python package:
+```StellarProperties/source/StellarProperties/data/Synthetic_Templates/<model_name>/```
 
 ### Lick Indices Example
 
