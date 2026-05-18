@@ -41,7 +41,7 @@ mc_ind_errors()         : Estimate the uncertainties on the indicies by
 
 # ____________________________________________________________________________#
 # ______________ Get the necesarry information from file _____________________#
-def get_from_file(input_fn, spec_type, **kwargs):
+def get_from_file(input_fn, spec_type="generic_txt", **kwargs):
     """A wrapper function which determiens which spectum type it is (e.g.
     SDSS, LEGA-C, MAGPI, SAMI), and then directs to the correct
     get_from_file function
@@ -55,11 +55,8 @@ def get_from_file(input_fn, spec_type, **kwargs):
     if spec_type == "generic_txt":
         return gff.get_from_file_generic_txt(input_fn, **kwargs)
 
-    if spec_type == "JWST_2D":
+    elif spec_type == "JWST_2D":
         return gff.JWST_2d_get_from_file(input_fn, **kwargs)
-
-    if spec_type == "JWST_1D":
-        return gff.JWST_1d_get_from_file(input_fn, **kwargs)
 
     elif spec_type == "KCWI":
         return gff.KCWI_get_from_file(input_fn, **kwargs)
@@ -92,7 +89,8 @@ def get_from_file(input_fn, spec_type, **kwargs):
         raise Exception(
             "What type of spectrum is this? Options are: 'SDSS', "
             "'LEGA-C', 'SAMI', 'MAGPI', 'KCWI', 'MOSFIRE' and"
-            " some others"
+            " some others. If spec_type is not one of these, "
+            "then prepare a generic text file and use 'generic_txt'"
         )
 
 
